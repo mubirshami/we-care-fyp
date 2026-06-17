@@ -134,6 +134,78 @@ function SentimentBadge({ sentiment }) {
   );
 }
 
+// ── Sentiment insight ─────────────────────────────────────────────────────────
+
+function getSentimentInsight(journals) {
+  const withSentiment = journals.slice(0, 7).filter((j) => j.sentiment);
+  if (withSentiment.length < 3) return null;
+  const counts = { positive: 0, negative: 0, neutral: 0 };
+  withSentiment.forEach((j) => {
+    const s = (j.sentiment || '').toLowerCase();
+    if (s in counts) counts[s]++;
+  });
+  const [dominant, count] = Object.entries(counts).sort(([, a], [, b]) => b - a)[0];
+  if (count / withSentiment.length < 0.4) return null;
+  return { sentiment: dominant, count, total: withSentiment.length };
+}
+
+const INSIGHT_CFG = {
+  positive: {
+    label: 'Mostly positive lately',
+    message: "Your recent entries reflect a positive outlook. Something's working — keep noticing it.",
+    cardCls: 'bg-success-50 border-success-200',
+    labelCls: 'text-success-700',
+    textCls:  'text-success-800',
+    iconPath: 'M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z',
+    iconCls:  'text-success-500',
+  },
+  negative: {
+    label: 'Some tough days recently',
+    message: "Your entries carry some heaviness lately. That's okay — writing it down is already a form of care.",
+    cardCls: 'bg-error-50 border-error-200',
+    labelCls: 'text-error-600',
+    textCls:  'text-error-800',
+    iconPath: 'M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z',
+    iconCls:  'text-error-400',
+  },
+  neutral: {
+    label: 'Steady and balanced',
+    message: 'Your recent entries show a calm, even state of mind. Quiet consistency has its own kind of strength.',
+    cardCls: 'bg-neutral-50 border-neutral-200',
+    labelCls: 'text-neutral-500',
+    textCls:  'text-neutral-700',
+    iconPath: 'M3.75 9h16.5m-16.5 6.75h16.5',
+    iconCls:  'text-neutral-400',
+  },
+};
+
+function InsightCard({ insight }) {
+  const cfg = INSIGHT_CFG[insight.sentiment];
+  return (
+    <aside
+      className={`rounded-card border px-5 py-4 flex items-start gap-4 ${cfg.cardCls}`}
+      aria-label="Sentiment insight"
+    >
+      <svg
+        className={`h-5 w-5 shrink-0 mt-0.5 ${cfg.iconCls}`}
+        fill="none"
+        viewBox="0 0 24 24"
+        strokeWidth={2}
+        stroke="currentColor"
+        aria-hidden="true"
+      >
+        <path strokeLinecap="round" strokeLinejoin="round" d={cfg.iconPath} />
+      </svg>
+      <div className="min-w-0">
+        <p className={`text-xs font-semibold uppercase tracking-wider mb-1 ${cfg.labelCls}`}>
+          {cfg.label}
+        </p>
+        <p className={`text-sm leading-relaxed ${cfg.textCls}`}>{cfg.message}</p>
+      </div>
+    </aside>
+  );
+}
+
 function TodayCardSkeleton() {
   return (
     <div className="rounded-card border border-neutral-200 bg-white p-6 shadow-card space-y-4" role="status" aria-label="Loading">
@@ -324,10 +396,11 @@ export default function Home() {
 
   useEffect(loadJournals, [token]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const todayEntry    = getTodayEntry(journals);
-  const streak        = calcStreak(journals);
-  const weeklyDots    = getWeeklyDots(journals);
-  const dailyPrompt   = getDailyPrompt();
+  const todayEntry       = getTodayEntry(journals);
+  const streak           = calcStreak(journals);
+  const weeklyDots       = getWeeklyDots(journals);
+  const dailyPrompt      = getDailyPrompt();
+  const sentimentInsight = !loading ? getSentimentInsight(journals) : null;
 
   const recentEntries = journals
     .filter((j) => !todayEntry || j._id !== todayEntry._id)
@@ -351,6 +424,8 @@ export default function Home() {
         <WeekTracker weekDots={weeklyDots} loading={loading} />
         <StreakCard streak={streak} journaledToday={!!todayEntry} loading={loading} />
       </div>
+
+      {sentimentInsight && <InsightCard insight={sentimentInsight} />}
 
       {!loading && recentEntries.length > 0 && (
         <section aria-label="Recent reflections">
