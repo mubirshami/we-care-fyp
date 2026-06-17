@@ -1,0 +1,88 @@
+# ============================================================
+# ROOT .gitignore — covers the entire monorepo
+# ============================================================
+
+# --- Environment variables (NEVER commit these) ---
+.env
+.env.local
+.env.development
+.env.development.local
+.env.test
+.env.test.local
+.env.production
+.env.production.local
+**/.env
+**/.env.*
+!**/.env.example
+
+# --- Dependencies ---
+node_modules/
+**/node_modules/
+
+# --- Build outputs ---
+dist/
+build/
+**/dist/
+**/build/
+
+# --- Test coverage ---
+coverage/
+**/coverage/
+.nyc_output/
+
+# --- Vite / webpack caches ---
+.vite/
+**/.vite/
+.cache/
+
+# --- OS-generated files ---
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+
+# --- IDE / editor files ---
+.idea/
+.vscode/
+*.swp
+*.swo
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# --- Logs ---
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# --- Runtime / temp files ---
+*.pid
+*.seed
+*.pid.lock
+.tmp/
+tmp/
+
+# --- Python (ml/) ---
+__pycache__/
+**/__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+.Python
+*.egg-info/
+.eggs/
+
+# --- Optional: uncomment if you want to exclude ML binaries ---
+# ml/*.h5
+# ml/*.pickle
+# ml/*.pkl
+# ml/*.xml

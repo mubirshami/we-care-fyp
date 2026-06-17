@@ -1,0 +1,26 @@
+{
+  "name": "wecare",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "start": "node app.js",
+    "dev": "node --watch app.js"
+  },
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "debug": "~2.6.9",
+    "dotenv": "^16.0.3",
+    "express": "^4.22.2",
+    "http-errors": "~1.6.3",
+    "form-data": "^4.0.5",
+    "joi": "^17.13.3",
+    "joi-password-complexity": "^5.1.0",
+    "jsonwebtoken": "^9.0.3",
+    "mongoose": "^8.13.2",
+    "morgan": "^1.10.1",
+    "nodemailer": "^8.0.4",
+    "openai": "^4.20.1"
+  }
+}

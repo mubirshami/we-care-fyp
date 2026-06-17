@@ -1,0 +1,184 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ================================================================
+   DESIGN SYSTEM — TOKEN DEFINITIONS (Tailwind v4 @theme)
+   Single source of truth for the entire visual language.
+   Every token here becomes a Tailwind utility automatically:
+     --color-primary-500  →  bg-primary-500 / text-primary-500
+     --shadow-card        →  shadow-card
+     --radius-card        →  rounded-card
+     --font-display       →  font-display
+   ================================================================ */
+
+@theme {
+  /* --- Primary: Sage Green ------------------------------------ */
+  --color-primary-50:  #f0fdf4;
+  --color-primary-100: #dcfce7;
+  --color-primary-200: #bbf7d0;
+  --color-primary-300: #86efac;
+  --color-primary-400: #4ade80;
+  --color-primary-500: #22c55e;
+  --color-primary-600: #16a34a;
+  --color-primary-700: #15803d;
+  --color-primary-800: #166534;
+  --color-primary-900: #14532d;
+
+  /* --- Accent: Warm Teal -------------------------------------- */
+  --color-accent-100: #ccfbf1;
+  --color-accent-200: #99f6e4;
+  --color-accent-300: #5eead4;
+  --color-accent-400: #2dd4bf;
+  --color-accent-500: #14b8a6;
+  --color-accent-600: #0d9488;
+  --color-accent-700: #0f766e;
+
+  /* --- Neutral: Warm Stone Gray (overrides cold Tailwind slate) */
+  --color-neutral-50:  #fafaf9;
+  --color-neutral-100: #f5f5f4;
+  --color-neutral-200: #e7e5e4;
+  --color-neutral-300: #d6d3d1;
+  --color-neutral-400: #a8a29e;
+  --color-neutral-500: #78716c;
+  --color-neutral-600: #57534e;
+  --color-neutral-700: #44403c;
+  --color-neutral-800: #292524;
+  --color-neutral-900: #1c1917;
+  --color-neutral-950: #0c0a09;
+
+  /* --- Semantic: Success -------------------------------------- */
+  --color-success-50:  #f0fdf4;
+  --color-success-100: #dcfce7;
+  --color-success-500: #22c55e;
+  --color-success-600: #16a34a;
+  --color-success-700: #15803d;
+
+  /* --- Semantic: Warning -------------------------------------- */
+  --color-warning-50:  #fffbeb;
+  --color-warning-100: #fef3c7;
+  --color-warning-500: #f59e0b;
+  --color-warning-600: #d97706;
+  --color-warning-700: #b45309;
+
+  /* --- Semantic: Error --------------------------------------- */
+  --color-error-50:  #fef2f2;
+  --color-error-100: #fee2e2;
+  --color-error-500: #ef4444;
+  --color-error-600: #dc2626;
+  --color-error-700: #b91c1c;
+
+  /* --- Semantic: Info ---------------------------------------- */
+  --color-info-50:  #f0f9ff;
+  --color-info-100: #e0f2fe;
+  --color-info-500: #0ea5e9;
+  --color-info-600: #0284c7;
+  --color-info-700: #0369a1;
+
+  /* --- Typography -------------------------------------------- */
+  --font-display: 'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-body:    'Inter', system-ui, sans-serif;
+
+  /* --- Border Radius (semantic names, additive over defaults) - */
+  --radius-card:   0.75rem;  /* 12px — cards, panels   */
+  --radius-input:  0.5rem;   /*  8px — inputs, selects  */
+  --radius-button: 0.5rem;   /*  8px — buttons          */
+  --radius-modal:  1rem;     /* 16px — modals, dialogs  */
+  --radius-pill:   9999px;   /* pill badges, tags        */
+
+  /* --- Shadows ----------------------------------------------- */
+  --shadow-card:    0 0 0 1px rgba(0,0,0,0.05), 0 2px 8px rgba(0,0,0,0.06);
+  --shadow-primary: 0 4px 16px rgba(34,197,94,0.30);
+}
+
+/* ================================================================
+   GLOBAL BASE STYLES
+   Using CSS custom properties directly (not @apply) because in
+   Tailwind v4, utilities are not yet registered when @layer base
+   is processed.
+   ================================================================ */
+
+@layer base {
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    margin: 0;
+    font-family: var(--font-body);
+    font-size: 1rem;
+    line-height: 1.6;
+    color: var(--color-neutral-800);
+    background-color: var(--color-neutral-50);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    line-height: 1.25;
+    color: var(--color-neutral-900);
+  }
+
+  /* Keyboard-only focus ring — primary brand color */
+  :focus-visible {
+    outline: 2px solid var(--color-primary-500);
+    outline-offset: 2px;
+  }
+
+  :focus:not(:focus-visible) {
+    outline: none;
+  }
+}
+
+/* ================================================================
+   KEYFRAME ANIMATIONS
+   Defined outside @layer so they are globally accessible.
+   ================================================================ */
+
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
+}
+
+@keyframes slide-in-right {
+  from { transform: translateX(112%); opacity: 0; }
+  to   { transform: translateX(0);    opacity: 1; }
+}
+
+/* ================================================================
+   CUSTOM UTILITIES
+   ================================================================ */
+
+@layer utilities {
+  /* Skeleton shimmer — used by LoadingSkeleton component */
+  .animate-shimmer {
+    background-image: linear-gradient(
+      90deg,
+      var(--color-neutral-200) 25%,
+      var(--color-neutral-100) 50%,
+      var(--color-neutral-200) 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s ease-in-out infinite;
+  }
+
+  /* Toast slide-in — used by ToastProvider component */
+  .animate-slide-in {
+    animation: slide-in-right 0.25s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+}
+
+/* Respect user's reduced-motion preference */
+@media (prefers-reduced-motion: reduce) {
+  .animate-shimmer,
+  .animate-slide-in {
+    animation: none;
+    transition: none;
+  }
+}
