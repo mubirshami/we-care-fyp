@@ -8,35 +8,9 @@ import usersService from '../../services/users';
 import { useToast } from '../../components/ui/ToastProvider';
 import Button from '../../components/ui/Button';
 import LoadingSkeleton from '../../components/ui/LoadingSkeleton';
+import { getEntryDate, calcStreak, MS_DAY } from '../../utils/journal';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
-
-const MS_DAY = 86_400_000;
-
-function getEntryDate(journal) {
-  if (journal.createdAt) return new Date(journal.createdAt);
-  if (journal._id) return new Date(parseInt(journal._id.substring(0, 8), 16) * 1000);
-  return new Date();
-}
-
-function calcStreak(journals) {
-  if (!journals.length) return 0;
-  const uniqueDays = [...new Set(journals.map((j) => getEntryDate(j).toDateString()))].sort(
-    (a, b) => new Date(b) - new Date(a)
-  );
-  const today = new Date().toDateString();
-  const yesterday = new Date(Date.now() - MS_DAY).toDateString();
-  if (uniqueDays[0] !== today && uniqueDays[0] !== yesterday) return 0;
-  let streak = 0;
-  let cursor = new Date(uniqueDays[0]);
-  for (const dayStr of uniqueDays) {
-    if (dayStr === cursor.toDateString()) {
-      streak++;
-      cursor = new Date(cursor.getTime() - MS_DAY);
-    } else break;
-  }
-  return streak;
-}
 
 function getWeekDayCount(journals) {
   const today = new Date();
@@ -91,7 +65,8 @@ function generateKeyInsight(journals, last7, streak) {
     return {
       headline: `You've reflected ${times} this week`,
       subtext: 'Your entries are beginning to build a picture of how you process your days.',
-      recommendation: streak >= 3 ? `A ${streak}-day streak — consistency like this adds up.` : null,
+      recommendation:
+        streak >= 3 ? `A ${streak}-day streak — consistency like this adds up.` : null,
       type: 'neutral',
     };
   }
@@ -99,9 +74,10 @@ function generateKeyInsight(journals, last7, streak) {
     return {
       headline: 'A mostly positive week',
       subtext: `You've reflected ${times} this week, and your entries lean positive.`,
-      recommendation: streak >= 2
-        ? `You're on a ${streak}-day streak — something's working.`
-        : "Keep noticing what's going well.",
+      recommendation:
+        streak >= 2
+          ? `You're on a ${streak}-day streak — something's working.`
+          : "Keep noticing what's going well.",
       type: 'positive',
     };
   }
@@ -116,9 +92,10 @@ function generateKeyInsight(journals, last7, streak) {
   return {
     headline: 'A steady, mixed week',
     subtext: `You've reflected ${times} this week with a range of emotions.`,
-    recommendation: streak >= 2
-      ? `${streak} days in a row — consistency matters more than always feeling good.`
-      : 'Every entry adds to your understanding of yourself.',
+    recommendation:
+      streak >= 2
+        ? `${streak} days in a row — consistency matters more than always feeling good.`
+        : 'Every entry adds to your understanding of yourself.',
     type: 'neutral',
   };
 }
@@ -141,7 +118,8 @@ const INSIGHT_TYPE_CFG = {
     headlineCls: 'text-error-900',
     subtextCls: 'text-error-800',
     recCls: 'text-error-700',
-    iconPath: 'M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z',
+    iconPath:
+      'M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z',
     iconCls: 'text-error-400',
   },
   neutral: {
@@ -168,7 +146,8 @@ const INSIGHT_TYPE_CFG = {
     headlineCls: 'text-primary-900',
     subtextCls: 'text-primary-800',
     recCls: 'text-primary-700',
-    iconPath: 'M16.862 4.487l1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Z',
+    iconPath:
+      'M16.862 4.487l1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Z',
     iconCls: 'text-primary-400',
   },
 };
@@ -176,28 +155,54 @@ const INSIGHT_TYPE_CFG = {
 // ── Emotion detection config ──────────────────────────────────────────────────
 
 const EMOTION_MAP = {
-  happy:     { emoji: '😊', label: 'Happy',     note: "It's a good moment to sit with this feeling." },
-  sad:       { emoji: '😔', label: 'Sad',       note: 'Being aware of sadness is the first step toward working through it.' },
-  angry:     { emoji: '😤', label: 'Tense',     note: 'Noticing tension early gives you a chance to respond rather than react.' },
-  surprised: { emoji: '😲', label: 'Surprised', note: 'Surprise can signal that something matters more than you realized.' },
-  fearful:   { emoji: '😟', label: 'Anxious',   note: 'Awareness of anxiety is a skill — and you\'re already practising it.' },
-  disgusted: { emoji: '😔', label: 'Unsettled', note: 'Strong reactions often point to what we care about most.' },
-  neutral:   { emoji: '😐', label: 'Calm',      note: 'A calm state is a good place to reflect from.' },
+  happy: { emoji: '😊', label: 'Happy', note: "It's a good moment to sit with this feeling." },
+  sad: {
+    emoji: '😔',
+    label: 'Sad',
+    note: 'Being aware of sadness is the first step toward working through it.',
+  },
+  angry: {
+    emoji: '😤',
+    label: 'Tense',
+    note: 'Noticing tension early gives you a chance to respond rather than react.',
+  },
+  surprised: {
+    emoji: '😲',
+    label: 'Surprised',
+    note: 'Surprise can signal that something matters more than you realized.',
+  },
+  fearful: {
+    emoji: '😟',
+    label: 'Anxious',
+    note: "Awareness of anxiety is a skill — and you're already practising it.",
+  },
+  disgusted: {
+    emoji: '😔',
+    label: 'Unsettled',
+    note: 'Strong reactions often point to what we care about most.',
+  },
+  neutral: { emoji: '😐', label: 'Calm', note: 'A calm state is a good place to reflect from.' },
 };
 
 function getEmotionCfg(emotion) {
-  return EMOTION_MAP[(emotion || '').toLowerCase()] || {
-    emoji: '🤔',
-    label: emotion || 'Unknown',
-    note: 'Take a moment to notice how you feel right now.',
-  };
+  return (
+    EMOTION_MAP[(emotion || '').toLowerCase()] || {
+      emoji: '🤔',
+      label: emotion || 'Unknown',
+      note: 'Take a moment to notice how you feel right now.',
+    }
+  );
 }
 
 // ── Components ────────────────────────────────────────────────────────────────
 
 function KeyInsightSkeleton() {
   return (
-    <div className="rounded-card border border-neutral-200 bg-white p-6 space-y-3" role="status" aria-label="Loading">
+    <div
+      className="rounded-card border border-neutral-200 bg-white p-6 space-y-3"
+      role="status"
+      aria-label="Loading"
+    >
       <div className="h-2.5 w-16 rounded animate-shimmer" />
       <div className="h-5 w-2/3 rounded animate-shimmer" />
       <div className="h-4 w-full rounded animate-shimmer" />
@@ -210,10 +215,7 @@ function KeyInsightSkeleton() {
 function KeyInsightCard({ insight }) {
   const cfg = INSIGHT_TYPE_CFG[insight.type] || INSIGHT_TYPE_CFG.neutral;
   return (
-    <section
-      className={`rounded-card border p-6 ${cfg.cardCls}`}
-      aria-label="Weekly insight"
-    >
+    <section className={`rounded-card border p-6 ${cfg.cardCls}`} aria-label="Weekly insight">
       <div className="flex items-start gap-4">
         <svg
           className={`h-5 w-5 shrink-0 mt-0.5 ${cfg.iconCls}`}
@@ -234,9 +236,7 @@ function KeyInsightCard({ insight }) {
           </h2>
           <p className={`mt-1.5 text-sm leading-relaxed ${cfg.subtextCls}`}>{insight.subtext}</p>
           {insight.recommendation && (
-            <p className={`mt-3 text-sm font-medium ${cfg.recCls}`}>
-              {insight.recommendation}
-            </p>
+            <p className={`mt-3 text-sm font-medium ${cfg.recCls}`}>{insight.recommendation}</p>
           )}
           {insight.type === 'empty' && (
             <Link
@@ -295,15 +295,37 @@ function SentimentDistributionSection({ dist, loading }) {
       </div>
       {hasData ? (
         <div className="rounded-card border border-neutral-200 bg-white shadow-card px-5 py-5 space-y-4">
-          <SentimentBarRow label="Positive" emoji="😊" count={dist.positive} total={dist.total} barCls="bg-success-400" />
-          <SentimentBarRow label="Neutral"  emoji="😐" count={dist.neutral}  total={dist.total} barCls="bg-neutral-300" />
-          <SentimentBarRow label="Difficult" emoji="😔" count={dist.negative} total={dist.total} barCls="bg-error-300" />
-          <p className="pt-1 text-xs text-neutral-400">{dist.total} {dist.total === 1 ? 'entry' : 'entries'} in this period</p>
+          <SentimentBarRow
+            label="Positive"
+            emoji="😊"
+            count={dist.positive}
+            total={dist.total}
+            barCls="bg-success-400"
+          />
+          <SentimentBarRow
+            label="Neutral"
+            emoji="😐"
+            count={dist.neutral}
+            total={dist.total}
+            barCls="bg-neutral-300"
+          />
+          <SentimentBarRow
+            label="Difficult"
+            emoji="😔"
+            count={dist.negative}
+            total={dist.total}
+            barCls="bg-error-300"
+          />
+          <p className="pt-1 text-xs text-neutral-400">
+            {dist.total} {dist.total === 1 ? 'entry' : 'entries'} in this period
+          </p>
         </div>
       ) : (
         <div className="rounded-card border border-dashed border-neutral-200 bg-neutral-50 px-5 py-8 text-center">
           <p className="text-sm font-medium text-neutral-600">Not enough data yet</p>
-          <p className="mt-1 text-xs text-neutral-500">Write a few more entries and your patterns will start to emerge.</p>
+          <p className="mt-1 text-xs text-neutral-500">
+            Write a few more entries and your patterns will start to emerge.
+          </p>
         </div>
       )}
     </section>
@@ -313,9 +335,7 @@ function SentimentDistributionSection({ dist, loading }) {
 function MoodDot({ sentiment }) {
   const key = (sentiment || 'neutral').toLowerCase();
   const cls =
-    key === 'positive' ? 'bg-success-400'
-    : key === 'negative' ? 'bg-error-300'
-    : 'bg-neutral-300';
+    key === 'positive' ? 'bg-success-400' : key === 'negative' ? 'bg-error-300' : 'bg-neutral-300';
   return (
     <div
       className={`h-3 w-3 rounded-full shrink-0 ${cls}`}
@@ -353,14 +373,16 @@ function ReflectionHabitsSection({ journals, streak, weekDayCount, loading }) {
       {journals.length === 0 ? (
         <div className="rounded-card border border-dashed border-neutral-200 bg-neutral-50 px-5 py-8 text-center">
           <p className="text-sm font-medium text-neutral-600">No entries yet</p>
-          <p className="mt-1 text-xs text-neutral-500">Your journaling habits will appear here once you start writing.</p>
+          <p className="mt-1 text-xs text-neutral-500">
+            Your journaling habits will appear here once you start writing.
+          </p>
         </div>
       ) : (
         <div className="space-y-4">
           {/* Stats row */}
           <div className="rounded-card border border-neutral-200 bg-white shadow-card divide-x divide-neutral-100 flex overflow-hidden">
             <StatPill value={`${weekDayCount}/7`} label="Days this week" />
-            <StatPill value={monthCount}           label="Entries this month" />
+            <StatPill value={monthCount} label="Entries this month" />
             <StatPill value={streak > 0 ? `${streak}d` : '—'} label="Current streak" />
           </div>
 
@@ -388,15 +410,24 @@ function ReflectionHabitsSection({ journals, streak, weekDayCount, loading }) {
                 <span className="text-xs text-neutral-400">Older</span>
                 <div className="flex items-center gap-3 flex-1 justify-center">
                   <span className="flex items-center gap-1 text-xs text-neutral-500">
-                    <span className="h-2 w-2 rounded-full bg-success-400 inline-block" aria-hidden="true" />
+                    <span
+                      className="h-2 w-2 rounded-full bg-success-400 inline-block"
+                      aria-hidden="true"
+                    />
                     Positive
                   </span>
                   <span className="flex items-center gap-1 text-xs text-neutral-500">
-                    <span className="h-2 w-2 rounded-full bg-neutral-300 inline-block" aria-hidden="true" />
+                    <span
+                      className="h-2 w-2 rounded-full bg-neutral-300 inline-block"
+                      aria-hidden="true"
+                    />
                     Neutral
                   </span>
                   <span className="flex items-center gap-1 text-xs text-neutral-500">
-                    <span className="h-2 w-2 rounded-full bg-error-300 inline-block" aria-hidden="true" />
+                    <span
+                      className="h-2 w-2 rounded-full bg-error-300 inline-block"
+                      aria-hidden="true"
+                    />
                     Difficult
                   </span>
                 </div>
@@ -413,13 +444,21 @@ function ReflectionHabitsSection({ journals, streak, weekDayCount, loading }) {
 // ── Emotion detection (check-in) ──────────────────────────────────────────────
 
 function EmotionResult({ data }) {
-  const dominant = data.dominant_emotion || data.emotion
-    || Object.keys(data).find((k) => k !== 'emotionTime' && typeof data[k] === 'number');
+  const dominant =
+    data.dominant_emotion ||
+    data.emotion ||
+    Object.keys(data).find((k) => k !== 'emotionTime' && typeof data[k] === 'number');
 
   const cfg = getEmotionCfg(dominant);
 
   const secondary = Object.entries(data)
-    .filter(([k, v]) => k !== 'dominant_emotion' && k !== 'emotionTime' && typeof v === 'number' && k.toLowerCase() !== (dominant || '').toLowerCase())
+    .filter(
+      ([k, v]) =>
+        k !== 'dominant_emotion' &&
+        k !== 'emotionTime' &&
+        typeof v === 'number' &&
+        k.toLowerCase() !== (dominant || '').toLowerCase()
+    )
     .sort(([, a], [, b]) => b - a)
     .slice(0, 3)
     .map(([k]) => getEmotionCfg(k));
@@ -432,15 +471,15 @@ function EmotionResult({ data }) {
       aria-label={`Detected emotion: ${cfg.label}`}
     >
       <div className="flex items-center gap-4">
-        <span className="text-4xl shrink-0" aria-hidden="true">{cfg.emoji}</span>
+        <span className="text-4xl shrink-0" aria-hidden="true">
+          {cfg.emoji}
+        </span>
         <div>
           <p className="text-base font-display font-semibold text-neutral-900">{cfg.label}</p>
           <p className="text-xs text-neutral-500 mt-0.5">Detected just now</p>
         </div>
       </div>
-      {cfg.note && (
-        <p className="text-sm text-neutral-600 leading-relaxed">{cfg.note}</p>
-      )}
+      {cfg.note && <p className="text-sm text-neutral-600 leading-relaxed">{cfg.note}</p>}
       {secondary.length > 0 && (
         <div className="flex flex-wrap items-center gap-1.5 pt-1">
           <span className="text-xs text-neutral-400">Also present:</span>
@@ -465,20 +504,38 @@ function CheckInSection({ detecting, emotionData, onDetect }) {
       <div className="mb-4">
         <h2 className="text-sm font-semibold text-neutral-800">How are you feeling right now?</h2>
         <p className="mt-0.5 text-xs text-neutral-500">
-          A camera check-in can reveal what words sometimes can't. Allow camera access when prompted.
+          A camera check-in can reveal what words sometimes can't. Allow camera access when
+          prompted.
         </p>
       </div>
       <div className="rounded-card border border-neutral-200 bg-white shadow-card p-5 space-y-4">
         <div className="flex items-start gap-4">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary-50">
-            <svg className="h-5 w-5 text-primary-500" fill="none" viewBox="0 0 24 24" strokeWidth={1.75} stroke="currentColor" aria-hidden="true">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6.827 6.175A2.31 2.31 0 0 1 5.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 0 0-1.134-.175 2.31 2.31 0 0 1-1.64-1.055l-.822-1.316a2.192 2.192 0 0 0-1.736-1.039 48.774 48.774 0 0 0-5.232 0 2.192 2.192 0 0 0-1.736 1.039l-.821 1.316Z" />
-              <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 12.75a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0ZM18.75 10.5h.008v.008h-.008V10.5Z" />
+            <svg
+              className="h-5 w-5 text-primary-500"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={1.75}
+              stroke="currentColor"
+              aria-hidden="true"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M6.827 6.175A2.31 2.31 0 0 1 5.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 0 0-1.134-.175 2.31 2.31 0 0 1-1.64-1.055l-.822-1.316a2.192 2.192 0 0 0-1.736-1.039 48.774 48.774 0 0 0-5.232 0 2.192 2.192 0 0 0-1.736 1.039l-.821 1.316Z"
+              />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M16.5 12.75a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0ZM18.75 10.5h.008v.008h-.008V10.5Z"
+              />
             </svg>
           </div>
           <div>
             <p className="text-sm font-semibold text-neutral-800">Facial emotion check-in</p>
-            <p className="text-xs text-neutral-500 mt-0.5">Takes a moment. Your camera is not recorded or stored.</p>
+            <p className="text-xs text-neutral-500 mt-0.5">
+              Takes a moment. Your camera is not recorded or stored.
+            </p>
           </div>
         </div>
         <Button onClick={onDetect} loading={detecting} variant="primary" size="md">
@@ -515,20 +572,26 @@ function MoodOverTimeSection({ token }) {
         setLoading(false);
       }
     })();
-    return () => { if (objectUrl) URL.revokeObjectURL(objectUrl); };
-  }, [token, mlBase]); // eslint-disable-line react-hooks/exhaustive-deps
+    return () => {
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    };
+  }, [token, mlBase]);
 
   return (
     <section aria-label="Mood over time">
       <div className="mb-4">
         <h2 className="text-sm font-semibold text-neutral-800">Your mood over time</h2>
-        <p className="mt-0.5 text-xs text-neutral-500">Sentiment and time-spent trends from your journaling sessions</p>
+        <p className="mt-0.5 text-xs text-neutral-500">
+          Sentiment and time-spent trends from your journaling sessions
+        </p>
       </div>
       {loading ? (
         <LoadingSkeleton variant="card" />
       ) : error ? (
         <div className="rounded-card border border-dashed border-neutral-200 bg-neutral-50 px-5 py-12 text-center">
-          <p className="text-3xl mb-3" aria-hidden="true">📊</p>
+          <p className="text-3xl mb-3" aria-hidden="true">
+            📊
+          </p>
           <p className="text-sm font-medium text-neutral-600">Timeline not available yet</p>
           <p className="mt-1 text-xs text-neutral-500">
             Your mood timeline will appear here as you build up a journaling history.
@@ -569,7 +632,9 @@ export default function Insights() {
       .finally(() => setJournalsLoading(false));
   }, [token, addToast]);
 
-  useEffect(() => { loadJournals(); }, [loadJournals]);
+  useEffect(() => {
+    loadJournals();
+  }, [loadJournals]);
 
   const handleDetect = useCallback(async () => {
     setDetecting(true);
@@ -589,25 +654,24 @@ export default function Insights() {
 
   // Derived values
   const now = Date.now();
-  const last7  = journals.filter((j) => now - getEntryDate(j).getTime() < 7  * MS_DAY);
+  const last7 = journals.filter((j) => now - getEntryDate(j).getTime() < 7 * MS_DAY);
   const last30 = journals.filter((j) => now - getEntryDate(j).getTime() < 30 * MS_DAY);
-  const streak       = calcStreak(journals);
+  const streak = calcStreak(journals);
   const weekDayCount = getWeekDayCount(journals);
-  const dist         = computeSentimentDist(last30);
-  const keyInsight   = generateKeyInsight(journals, last7, streak);
+  const dist = computeSentimentDist(last30);
+  const keyInsight = generateKeyInsight(journals, last7, streak);
 
   return (
     <div className="max-w-[820px] mx-auto px-4 py-6 sm:px-6 sm:py-8 space-y-8">
-
       <header>
         <h1 className="text-2xl font-display font-semibold text-neutral-900 mb-1">Insights</h1>
-        <p className="text-sm text-neutral-500">Understanding your emotional patterns and habits.</p>
+        <p className="text-sm text-neutral-500">
+          Understanding your emotional patterns and habits.
+        </p>
       </header>
 
       {/* ── Top: Key insight ── */}
-      {journalsLoading
-        ? <KeyInsightSkeleton />
-        : <KeyInsightCard insight={keyInsight} />}
+      {journalsLoading ? <KeyInsightSkeleton /> : <KeyInsightCard insight={keyInsight} />}
 
       {/* ── Middle: Patterns + Habits ── */}
       <SentimentDistributionSection dist={dist} loading={journalsLoading} />
@@ -619,13 +683,8 @@ export default function Insights() {
       />
 
       {/* ── Bottom: Check-in + Chart ── */}
-      <CheckInSection
-        detecting={detecting}
-        emotionData={emotionData}
-        onDetect={handleDetect}
-      />
+      <CheckInSection detecting={detecting} emotionData={emotionData} onDetect={handleDetect} />
       <MoodOverTimeSection token={token} />
-
     </div>
   );
 }

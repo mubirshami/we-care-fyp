@@ -9,7 +9,11 @@ import LoadingSkeleton from '../../components/ui/LoadingSkeleton';
 function StarRating({ value, onChange, readonly = false }) {
   const [hovered, setHovered] = useState(0);
   return (
-    <div className="flex gap-1" role={readonly ? undefined : 'group'} aria-label={readonly ? undefined : 'Star rating'}>
+    <div
+      className="flex gap-1"
+      role={readonly ? undefined : 'group'}
+      aria-label={readonly ? undefined : 'Star rating'}
+    >
       {[1, 2, 3, 4, 5].map((star) => {
         const filled = star <= (hovered || value);
         return (
@@ -21,7 +25,11 @@ function StarRating({ value, onChange, readonly = false }) {
             onMouseLeave={() => !readonly && setHovered(0)}
             aria-label={readonly ? undefined : `Rate ${star} star${star !== 1 ? 's' : ''}`}
             disabled={readonly}
-            className={['text-2xl transition-all duration-100', filled ? 'text-warning-500' : 'text-neutral-300', !readonly ? 'hover:scale-110 cursor-pointer' : 'cursor-default'].join(' ')}
+            className={[
+              'text-2xl transition-all duration-100',
+              filled ? 'text-warning-500' : 'text-neutral-300',
+              !readonly ? 'hover:scale-110 cursor-pointer' : 'cursor-default',
+            ].join(' ')}
           >
             ★
           </button>
@@ -39,7 +47,10 @@ function ReviewForm({ initial, onSave, onCancel, submitLabel = 'Submit review' }
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (description.trim().length < 10) { setError('Please write at least 10 characters.'); return; }
+    if (description.trim().length < 10) {
+      setError('Please write at least 10 characters.');
+      return;
+    }
     setSaving(true);
     setError('');
     try {
@@ -53,30 +64,55 @@ function ReviewForm({ initial, onSave, onCancel, submitLabel = 'Submit review' }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
-      <div className="space-y-2">
-        <label className="block text-sm font-medium text-neutral-700">Your rating</label>
+      <div className="space-y-2" role="group" aria-labelledby="rating-label">
+        <p id="rating-label" className="block text-sm font-medium text-neutral-700">
+          Your rating
+        </p>
         <StarRating value={rating} onChange={setRating} />
       </div>
       <div className="space-y-1.5">
         <label htmlFor="review-desc" className="block text-sm font-medium text-neutral-700">
-          Your experience <span className="text-error-500" aria-hidden="true">*</span>
+          Your experience{' '}
+          <span className="text-error-500" aria-hidden="true">
+            *
+          </span>
         </label>
         <textarea
           id="review-desc"
           value={description}
-          onChange={(e) => { setDescription(e.target.value); setError(''); }}
+          onChange={(e) => {
+            setDescription(e.target.value);
+            setError('');
+          }}
           rows={5}
           placeholder="Tell us about your experience with We Care…"
-          className={['w-full rounded-input border bg-white px-4 py-3 text-sm text-neutral-900', 'placeholder:text-neutral-400 resize-none', 'focus:outline-none focus:ring-2 transition-all duration-150', error ? 'border-error-500 focus:border-error-500 focus:ring-error-100' : 'border-neutral-200 hover:border-neutral-300 focus:border-primary-500 focus:ring-primary-100'].join(' ')}
+          className={[
+            'w-full rounded-input border bg-white px-4 py-3 text-sm text-neutral-900',
+            'placeholder:text-neutral-400 resize-none',
+            'focus:outline-none focus:ring-2 transition-all duration-150',
+            error
+              ? 'border-error-500 focus:border-error-500 focus:ring-error-100'
+              : 'border-neutral-200 hover:border-neutral-300 focus:border-primary-500 focus:ring-primary-100',
+          ].join(' ')}
           aria-invalid={!!error}
           aria-describedby={error ? 'review-error' : undefined}
         />
-        {error && <p id="review-error" role="alert" className="text-xs text-error-600">{error}</p>}
+        {error && (
+          <p id="review-error" role="alert" className="text-xs text-error-600">
+            {error}
+          </p>
+        )}
         <p className="text-xs text-neutral-400">{description.length} characters</p>
       </div>
       <div className="flex gap-3 pt-1">
-        <Button type="submit" loading={saving} variant="primary" size="md">{submitLabel}</Button>
-        {onCancel && <Button type="button" variant="secondary" size="md" onClick={onCancel}>Cancel</Button>}
+        <Button type="submit" loading={saving} variant="primary" size="md">
+          {submitLabel}
+        </Button>
+        {onCancel && (
+          <Button type="button" variant="secondary" size="md" onClick={onCancel}>
+            Cancel
+          </Button>
+        )}
       </div>
     </form>
   );
@@ -89,13 +125,17 @@ function ReviewCard({ review, onEdit }) {
       <div className="p-6 space-y-3">
         <div className="flex items-start justify-between gap-4">
           <StarRating value={review.rating} readonly />
-          <Button variant="secondary" size="sm" onClick={() => onEdit(review)}>Edit review</Button>
+          <Button variant="secondary" size="sm" onClick={() => onEdit(review)}>
+            Edit review
+          </Button>
         </div>
         <p className="text-sm text-neutral-800 leading-relaxed">{review.description}</p>
       </div>
       {hasAdminResponse && (
         <div className="border-t border-neutral-100 bg-neutral-50 px-6 py-4">
-          <p className="text-xs font-semibold uppercase tracking-wider text-neutral-400 mb-1.5">Response from We Care</p>
+          <p className="text-xs font-semibold uppercase tracking-wider text-neutral-400 mb-1.5">
+            Response from We Care
+          </p>
           <p className="text-sm text-neutral-700 leading-relaxed">{review.adminresponse}</p>
         </div>
       )}
@@ -114,7 +154,10 @@ export default function Reviews() {
   const loadReviews = useCallback(async () => {
     setLoading(true);
     try {
-      const [checkRes, reviewsRes] = await Promise.all([reviewsService.check(token), reviewsService.get(token)]);
+      const [checkRes, reviewsRes] = await Promise.all([
+        reviewsService.check(token),
+        reviewsService.get(token),
+      ]);
       setHasReviewed(checkRes.data.hasReviewed);
       setReviews(Array.isArray(reviewsRes.data) ? reviewsRes.data : []);
     } catch {
@@ -124,7 +167,9 @@ export default function Reviews() {
     }
   }, [token]);
 
-  useEffect(() => { loadReviews(); }, [loadReviews]);
+  useEffect(() => {
+    loadReviews();
+  }, [loadReviews]);
 
   const handleAdd = async (payload) => {
     await reviewsService.add(payload, token);
@@ -142,7 +187,9 @@ export default function Reviews() {
   return (
     <div className="max-w-[680px] mx-auto px-4 py-6 sm:px-6 sm:py-8">
       <h1 className="text-2xl font-display font-semibold text-neutral-900 mb-1">Review</h1>
-      <p className="text-sm text-neutral-500 mb-8">Your feedback helps us improve We Care for everyone.</p>
+      <p className="text-sm text-neutral-500 mb-8">
+        Your feedback helps us improve We Care for everyone.
+      </p>
 
       {loading ? (
         <LoadingSkeleton variant="card" />
@@ -150,22 +197,36 @@ export default function Reviews() {
         <div className="rounded-card border border-neutral-200 bg-white shadow-card p-6">
           <div className="mb-6">
             <h2 className="text-base font-semibold text-neutral-800">Share your experience</h2>
-            <p className="mt-1 text-sm text-neutral-500">How has We Care helped you on your mental wellness journey?</p>
+            <p className="mt-1 text-sm text-neutral-500">
+              How has We Care helped you on your mental wellness journey?
+            </p>
           </div>
           <ReviewForm onSave={handleAdd} submitLabel="Submit review" />
         </div>
       ) : (
         <div className="space-y-5">
-          <p className="text-sm text-neutral-500">{reviews.length === 1 ? 'Your review' : `Your ${reviews.length} reviews`}</p>
+          <p className="text-sm text-neutral-500">
+            {reviews.length === 1 ? 'Your review' : `Your ${reviews.length} reviews`}
+          </p>
           {reviews.map((review) => (
             <ReviewCard key={review._id} review={review} onEdit={setEditingReview} />
           ))}
         </div>
       )}
 
-      <Modal isOpen={!!editingReview} onClose={() => setEditingReview(null)} title="Edit your review" size="md">
+      <Modal
+        isOpen={!!editingReview}
+        onClose={() => setEditingReview(null)}
+        title="Edit your review"
+        size="md"
+      >
         {editingReview && (
-          <ReviewForm initial={editingReview} onSave={handleUpdate} onCancel={() => setEditingReview(null)} submitLabel="Save changes" />
+          <ReviewForm
+            initial={editingReview}
+            onSave={handleUpdate}
+            onCancel={() => setEditingReview(null)}
+            submitLabel="Save changes"
+          />
         )}
       </Modal>
     </div>
