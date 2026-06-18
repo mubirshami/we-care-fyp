@@ -6,20 +6,13 @@ import AuthLayout, { PasswordInput, AuthSpinner } from './AuthLayout';
 
 function validate(values) {
   const errors = {};
-  if (!values.name.trim())
-    errors.name = 'Please enter your full name.';
-  else if (values.name.trim().length < 2)
-    errors.name = 'Name must be at least 2 characters.';
-  if (!values.email.trim())
-    errors.email = 'Please enter your email address.';
-  if (!values.password)
-    errors.password = 'Please create a password.';
-  else if (values.password.length < 8)
-    errors.password = 'Password must be at least 8 characters.';
-  if (!values.confirm)
-    errors.confirm = 'Please confirm your password.';
-  else if (values.password !== values.confirm)
-    errors.confirm = 'Passwords do not match.';
+  if (!values.name.trim()) errors.name = 'Please enter your full name.';
+  else if (values.name.trim().length < 2) errors.name = 'Name must be at least 2 characters.';
+  if (!values.email.trim()) errors.email = 'Please enter your email address.';
+  if (!values.password) errors.password = 'Please create a password.';
+  else if (values.password.length < 8) errors.password = 'Password must be at least 8 characters.';
+  if (!values.confirm) errors.confirm = 'Please confirm your password.';
+  else if (values.password !== values.confirm) errors.confirm = 'Passwords do not match.';
   return errors;
 }
 
@@ -27,16 +20,27 @@ function SuccessState({ email }) {
   return (
     <div className="space-y-8">
       <div className="flex h-14 w-14 items-center justify-center rounded-full bg-success-50 border border-success-200">
-        <svg className="h-7 w-7 text-success-600" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" aria-hidden="true">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
+        <svg
+          className="h-7 w-7 text-success-600"
+          fill="none"
+          viewBox="0 0 24 24"
+          strokeWidth={2}
+          stroke="currentColor"
+          aria-hidden="true"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"
+          />
         </svg>
       </div>
       <div>
         <h2 className="text-2xl font-display font-semibold text-neutral-900">Check your inbox</h2>
         <p className="mt-2 text-sm text-neutral-500 leading-relaxed">
           We sent a verification link to{' '}
-          <span className="font-semibold text-neutral-700">{email}</span>.
-          Click the link to activate your account and start your wellness journey.
+          <span className="font-semibold text-neutral-700">{email}</span>. Click the link to
+          activate your account and start your wellness journey.
         </p>
         <p className="mt-3 text-xs text-neutral-400">
           The link expires in 24 hours. If you don't see it, check your spam folder.
@@ -59,17 +63,22 @@ function SuccessState({ email }) {
 function Signup() {
   const { logout } = useAuth();
   const [values, setValues] = useState({ name: '', email: '', password: '', confirm: '' });
-  const [touched, setTouched] = useState({ name: false, email: false, password: false, confirm: false });
+  const [touched, setTouched] = useState({
+    name: false,
+    email: false,
+    password: false,
+    confirm: false,
+  });
   const [serverError, setServerError] = useState('');
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
-  useEffect(() => { logout(); }, [logout]);
+  useEffect(() => {
+    logout();
+  }, [logout]);
 
   const errors = validate(values);
-  const visibleErrors = Object.fromEntries(
-    Object.entries(errors).filter(([key]) => touched[key])
-  );
+  const visibleErrors = Object.fromEntries(Object.entries(errors).filter(([key]) => touched[key]));
   const isValid = Object.keys(errors).length === 0;
 
   const set = (field) => (e) => {
@@ -77,8 +86,7 @@ function Signup() {
     if (serverError) setServerError('');
   };
 
-  const blur = (field) => () =>
-    setTouched((t) => ({ ...t, [field]: true }));
+  const blur = (field) => () => setTouched((t) => ({ ...t, [field]: true }));
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -95,12 +103,10 @@ function Signup() {
       if (res.status === 200 || res.status === 201) setSubmitted(true);
     } catch (err) {
       const status = err?.response?.status;
-      if (status === 409)
-        setServerError('An account with this email address already exists.');
+      if (status === 409) setServerError('An account with this email address already exists.');
       else if (status === 400)
         setServerError(err?.response?.data?.message || 'Please check your details and try again.');
-      else
-        setServerError('Something went wrong. Please try again in a moment.');
+      else setServerError('Something went wrong. Please try again in a moment.');
     } finally {
       setLoading(false);
     }
@@ -118,7 +124,9 @@ function Signup() {
     <AuthLayout>
       <div className="space-y-8">
         <div>
-          <h2 className="text-2xl font-display font-semibold text-neutral-900">Start your journey</h2>
+          <h2 className="text-2xl font-display font-semibold text-neutral-900">
+            Start your journey
+          </h2>
           <p className="mt-2 text-sm text-neutral-500">
             Create your account to begin taking care of your mind.
           </p>
@@ -126,7 +134,9 @@ function Signup() {
 
         <form className="space-y-5" onSubmit={handleSubmit} noValidate>
           <div className="space-y-1.5">
-            <label htmlFor="signup-name" className="block text-sm font-medium text-neutral-700">Full name</label>
+            <label htmlFor="signup-name" className="block text-sm font-medium text-neutral-700">
+              Full name
+            </label>
             <input
               id="signup-name"
               type="text"
@@ -148,12 +158,16 @@ function Signup() {
               ].join(' ')}
             />
             {visibleErrors.name && (
-              <p id="name-error" role="alert" className="text-xs text-error-600">{visibleErrors.name}</p>
+              <p id="name-error" role="alert" className="text-xs text-error-600">
+                {visibleErrors.name}
+              </p>
             )}
           </div>
 
           <div className="space-y-1.5">
-            <label htmlFor="signup-email" className="block text-sm font-medium text-neutral-700">Email address</label>
+            <label htmlFor="signup-email" className="block text-sm font-medium text-neutral-700">
+              Email address
+            </label>
             <input
               id="signup-email"
               type="email"
@@ -175,7 +189,9 @@ function Signup() {
               ].join(' ')}
             />
             {visibleErrors.email && (
-              <p id="email-error" role="alert" className="text-xs text-error-600">{visibleErrors.email}</p>
+              <p id="email-error" role="alert" className="text-xs text-error-600">
+                {visibleErrors.email}
+              </p>
             )}
           </div>
 
@@ -203,9 +219,23 @@ function Signup() {
           />
 
           {serverError && (
-            <div role="alert" className="flex items-start gap-2.5 rounded-input border border-error-100 bg-error-50 px-4 py-3">
-              <svg className="h-4 w-4 shrink-0 mt-0.5 text-error-500" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" aria-hidden="true">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
+            <div
+              role="alert"
+              className="flex items-start gap-2.5 rounded-input border border-error-100 bg-error-50 px-4 py-3"
+            >
+              <svg
+                className="h-4 w-4 shrink-0 mt-0.5 text-error-500"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={2}
+                stroke="currentColor"
+                aria-hidden="true"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z"
+                />
               </svg>
               <p className="text-sm text-error-700">{serverError}</p>
             </div>
@@ -236,7 +266,10 @@ function Signup() {
 
         <p className="text-center text-sm text-neutral-500">
           Already have an account?{' '}
-          <Link to="/signin" className="font-semibold text-primary-600 hover:text-primary-700 transition-colors">
+          <Link
+            to="/signin"
+            className="font-semibold text-primary-600 hover:text-primary-700 transition-colors"
+          >
             Sign in
           </Link>
         </p>

@@ -9,15 +9,17 @@ function Signin() {
   const { login, setUserName, logout } = useAuth();
   const isMounted = useRef(true);
 
-  const [email, setEmail]       = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError]       = useState('');
-  const [loading, setLoading]   = useState(false);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     isMounted.current = true;
     logout();
-    return () => { isMounted.current = false; };
+    return () => {
+      isMounted.current = false;
+    };
   }, [logout]);
 
   const handleSignIn = useCallback(
@@ -35,12 +37,12 @@ function Signin() {
         }
       } catch (err) {
         const status = err?.response?.status;
-        if (status === 404)
-          setError('No account found with that email address.');
+        if (status === 404) setError('No account found with that email address.');
         else if (status === 401 || status === 400)
-          setError(err?.response?.data?.message || 'Incorrect email or password. Please try again.');
-        else
-          setError('Something went wrong. Please try again in a moment.');
+          setError(
+            err?.response?.data?.message || 'Incorrect email or password. Please try again.'
+          );
+        else setError('Something went wrong. Please try again in a moment.');
       } finally {
         if (isMounted.current) setLoading(false);
       }
@@ -70,7 +72,10 @@ function Signin() {
               autoComplete="email"
               placeholder="you@example.com"
               value={email}
-              onChange={(e) => { setEmail(e.target.value); setError(''); }}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                setError('');
+              }}
               className={[
                 'w-full rounded-input border bg-white px-4 py-3 text-sm text-neutral-900',
                 'placeholder:text-neutral-400',
@@ -84,7 +89,10 @@ function Signin() {
             id="signin-password"
             label="Password"
             value={password}
-            onChange={(e) => { setPassword(e.target.value); setError(''); }}
+            onChange={(e) => {
+              setPassword(e.target.value);
+              setError('');
+            }}
             placeholder="Enter your password"
             autoComplete="current-password"
           />
@@ -99,9 +107,23 @@ function Signin() {
           </div>
 
           {error && (
-            <div role="alert" className="flex items-start gap-2.5 rounded-input border border-error-100 bg-error-50 px-4 py-3">
-              <svg className="h-4 w-4 shrink-0 mt-0.5 text-error-500" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" aria-hidden="true">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
+            <div
+              role="alert"
+              className="flex items-start gap-2.5 rounded-input border border-error-100 bg-error-50 px-4 py-3"
+            >
+              <svg
+                className="h-4 w-4 shrink-0 mt-0.5 text-error-500"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={2}
+                stroke="currentColor"
+                aria-hidden="true"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z"
+                />
               </svg>
               <p className="text-sm text-error-700">{error}</p>
             </div>
@@ -132,7 +154,10 @@ function Signin() {
 
         <p className="text-center text-sm text-neutral-500">
           New to We Care?{' '}
-          <Link to="/signup" className="font-semibold text-primary-600 hover:text-primary-700 transition-colors">
+          <Link
+            to="/signup"
+            className="font-semibold text-primary-600 hover:text-primary-700 transition-colors"
+          >
             Create an account
           </Link>
         </p>
