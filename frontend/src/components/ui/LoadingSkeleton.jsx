@@ -3,7 +3,9 @@ import React from 'react';
 export function SkeletonLine({ width = 'w-full', height = 'h-4', className = '' }) {
   return (
     <div
-      className={['animate-shimmer rounded-button', width, height, className].filter(Boolean).join(' ')}
+      className={['animate-shimmer rounded-button', width, height, className]
+        .filter(Boolean)
+        .join(' ')}
       aria-hidden="true"
     />
   );
