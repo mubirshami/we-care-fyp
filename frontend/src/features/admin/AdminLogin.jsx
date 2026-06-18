@@ -11,8 +11,8 @@ export default function AdminLogin() {
   const { addToast } = useToast();
 
   const [password, setPassword] = useState('');
-  const [error, setError]       = useState('');
-  const [loading, setLoading]   = useState(false);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = useCallback(
     async (e) => {
@@ -27,10 +27,8 @@ export default function AdminLogin() {
         navigate('/viewusers');
       } catch (err) {
         const status = err?.response?.status;
-        if (status === 401)
-          setError('Incorrect password. Please try again.');
-        else
-          setError('Sign in failed. Please try again.');
+        if (status === 401) setError('Incorrect password. Please try again.');
+        else setError('Sign in failed. Please try again.');
       } finally {
         setLoading(false);
       }
@@ -42,9 +40,21 @@ export default function AdminLogin() {
     <div className="min-h-screen flex items-center justify-center px-6 bg-neutral-50">
       <div className="w-full max-w-sm">
         <div className="flex items-center justify-center gap-2.5 mb-8">
-          <div className="h-8 w-8 flex items-center justify-center rounded-lg" style={{ backgroundColor: 'var(--color-primary-500)' }}>
-            <svg className="h-4 w-4 text-white" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
-              <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
+          <div
+            className="h-8 w-8 flex items-center justify-center rounded-lg"
+            style={{ backgroundColor: 'var(--color-primary-500)' }}
+          >
+            <svg
+              className="h-4 w-4 text-white"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+              aria-hidden="true"
+            >
+              <path
+                fillRule="evenodd"
+                d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"
+                clipRule="evenodd"
+              />
             </svg>
           </div>
           <span className="text-lg font-display font-bold text-neutral-900">We Care</span>
@@ -61,12 +71,19 @@ export default function AdminLogin() {
               id="admin-password"
               label="Admin password"
               value={password}
-              onChange={(e) => { setPassword(e.target.value); setError(''); }}
+              onChange={(e) => {
+                setPassword(e.target.value);
+                setError('');
+              }}
               placeholder="Enter admin password"
               autoComplete="current-password"
             />
 
-            {error && <p role="alert" className="text-sm text-error-600">{error}</p>}
+            {error && (
+              <p role="alert" className="text-sm text-error-600">
+                {error}
+              </p>
+            )}
 
             <button
               type="submit"
@@ -80,13 +97,23 @@ export default function AdminLogin() {
                 'transition-all duration-150',
               ].join(' ')}
             >
-              {loading ? (<><AuthSpinner /><span>Signing in…</span></>) : 'Sign in'}
+              {loading ? (
+                <>
+                  <AuthSpinner />
+                  <span>Signing in…</span>
+                </>
+              ) : (
+                'Sign in'
+              )}
             </button>
           </form>
         </div>
 
         <div className="mt-5 text-center">
-          <Link to="/signin" className="text-sm text-neutral-400 hover:text-neutral-600 transition-colors">
+          <Link
+            to="/signin"
+            className="text-sm text-neutral-400 hover:text-neutral-600 transition-colors"
+          >
             ← Return to app
           </Link>
         </div>
