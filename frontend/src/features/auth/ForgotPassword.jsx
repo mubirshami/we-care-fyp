@@ -7,8 +7,19 @@ function EmailSentState({ email }) {
   return (
     <div className="space-y-8">
       <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary-50 border border-primary-200">
-        <svg className="h-7 w-7 text-primary-600" fill="none" viewBox="0 0 24 24" strokeWidth={1.75} stroke="currentColor" aria-hidden="true">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
+        <svg
+          className="h-7 w-7 text-primary-600"
+          fill="none"
+          viewBox="0 0 24 24"
+          strokeWidth={1.75}
+          stroke="currentColor"
+          aria-hidden="true"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"
+          />
         </svg>
       </div>
       <div>
@@ -36,10 +47,10 @@ function EmailSentState({ email }) {
 }
 
 export default function ForgotPassword() {
-  const [email, setEmail]     = useState('');
-  const [error, setError]     = useState('');
+  const [email, setEmail] = useState('');
+  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [sent, setSent]       = useState(false);
+  const [sent, setSent] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -50,10 +61,8 @@ export default function ForgotPassword() {
       if (res.status === 200) setSent(true);
     } catch (err) {
       const status = err?.response?.status;
-      if (status === 404)
-        setError('No account found with that email address.');
-      else
-        setError('Something went wrong. Please try again in a moment.');
+      if (status === 404) setError('No account found with that email address.');
+      else setError('Something went wrong. Please try again in a moment.');
     } finally {
       setLoading(false);
     }
@@ -76,12 +85,25 @@ export default function ForgotPassword() {
             className="mb-5 flex items-center gap-1.5 text-sm text-neutral-400 hover:text-neutral-600 transition-colors w-fit"
             aria-label="Back to sign in"
           >
-            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" aria-hidden="true">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+            <svg
+              className="h-4 w-4"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={2}
+              stroke="currentColor"
+              aria-hidden="true"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"
+              />
             </svg>
             Back to sign in
           </Link>
-          <h2 className="text-2xl font-display font-semibold text-neutral-900">Reset your password</h2>
+          <h2 className="text-2xl font-display font-semibold text-neutral-900">
+            Reset your password
+          </h2>
           <p className="mt-2 text-sm text-neutral-500 leading-relaxed">
             Enter the email address associated with your account and we'll send you a reset link.
           </p>
@@ -99,7 +121,10 @@ export default function ForgotPassword() {
               autoComplete="email"
               placeholder="you@example.com"
               value={email}
-              onChange={(e) => { setEmail(e.target.value); setError(''); }}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                setError('');
+              }}
               aria-describedby={error ? 'forgot-error' : undefined}
               aria-invalid={!!error}
               className={[
@@ -112,7 +137,9 @@ export default function ForgotPassword() {
               ].join(' ')}
             />
             {error && (
-              <p id="forgot-error" role="alert" className="text-xs text-error-600">{error}</p>
+              <p id="forgot-error" role="alert" className="text-xs text-error-600">
+                {error}
+              </p>
             )}
           </div>
 
