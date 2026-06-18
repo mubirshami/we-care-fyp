@@ -1,12 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import reviewsService from '../../services/reviews';
 import AdminShell from './AdminShell';
-import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../components/ui/ToastProvider';
 
 const ReviewsPanel = () => {
-  const navigate = useNavigate();
   const { adminToken } = useAuth();
   const { addToast } = useToast();
   const [reviews, setReviews] = useState([]);
@@ -91,21 +89,36 @@ const ReviewsPanel = () => {
                         }}
                       />
                       <div className="flex gap-2">
-                        <button className="px-3 py-1 bg-green-500 text-white rounded text-sm" onClick={() => handleUpdateResponse(review._id, review.adminresponse)}>Update</button>
-                        <button className="px-3 py-1 border rounded text-sm" onClick={cancelUpdate}>Cancel</button>
+                        <button
+                          className="px-3 py-1 bg-green-500 text-white rounded text-sm"
+                          onClick={() => handleUpdateResponse(review._id, review.adminresponse)}
+                        >
+                          Update
+                        </button>
+                        <button className="px-3 py-1 border rounded text-sm" onClick={cancelUpdate}>
+                          Cancel
+                        </button>
                       </div>
                     </div>
                   ) : (
                     <div>
                       <p className="mb-2 text-sm">{review.adminresponse}</p>
-                      <button className="px-3 py-1 bg-yellow-400 rounded text-sm" onClick={() => showUpdateButton(review._id)}>Update Response</button>
+                      <button
+                        className="px-3 py-1 bg-yellow-400 rounded text-sm"
+                        onClick={() => showUpdateButton(review._id)}
+                      >
+                        Update Response
+                      </button>
                     </div>
                   )}
                 </div>
               ) : respondingId === review._id ? (
                 <div>
-                  <label className="block text-sm font-medium mb-1">Your response:</label>
+                  <label htmlFor="review-response" className="block text-sm font-medium mb-1">
+                    Your response:
+                  </label>
                   <textarea
+                    id="review-response"
                     className="w-full border rounded p-2 mb-2 text-sm"
                     rows={3}
                     value={responseText}
@@ -113,12 +126,33 @@ const ReviewsPanel = () => {
                     placeholder="Write your response..."
                   />
                   <div className="flex gap-2">
-                    <button className="px-3 py-1 bg-blue-600 text-white rounded text-sm" onClick={() => handleRespond(review._id)}>Submit</button>
-                    <button className="px-3 py-1 border rounded text-sm" onClick={() => { setRespondingId(null); setResponseText(''); }}>Cancel</button>
+                    <button
+                      className="px-3 py-1 bg-blue-600 text-white rounded text-sm"
+                      onClick={() => handleRespond(review._id)}
+                    >
+                      Submit
+                    </button>
+                    <button
+                      className="px-3 py-1 border rounded text-sm"
+                      onClick={() => {
+                        setRespondingId(null);
+                        setResponseText('');
+                      }}
+                    >
+                      Cancel
+                    </button>
                   </div>
                 </div>
               ) : (
-                <button className="px-3 py-1 bg-blue-600 text-white rounded text-sm" onClick={() => { setRespondingId(review._id); setResponseText(''); }}>Respond</button>
+                <button
+                  className="px-3 py-1 bg-blue-600 text-white rounded text-sm"
+                  onClick={() => {
+                    setRespondingId(review._id);
+                    setResponseText('');
+                  }}
+                >
+                  Respond
+                </button>
               )}
             </li>
           ))}

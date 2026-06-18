@@ -35,7 +35,9 @@ function AddTab({ adminToken, addToast }) {
   return (
     <form onSubmit={handleSubmit} aria-busy={loading}>
       <div className="mb-4">
-        <label htmlFor="book-name" className="block text-sm font-medium mb-1">Book Name</label>
+        <label htmlFor="book-name" className="block text-sm font-medium mb-1">
+          Book Name
+        </label>
         <input
           type="text"
           id="book-name"
@@ -45,10 +47,16 @@ function AddTab({ adminToken, addToast }) {
           aria-invalid={!!errors.name}
           aria-describedby={errors.name ? 'book-name-error' : undefined}
         />
-        {errors.name && <p id="book-name-error" className="text-sm text-red-600 mt-1">{errors.name}</p>}
+        {errors.name && (
+          <p id="book-name-error" className="text-sm text-red-600 mt-1">
+            {errors.name}
+          </p>
+        )}
       </div>
       <div className="mb-4">
-        <label htmlFor="book-url" className="block text-sm font-medium mb-1">Book URL</label>
+        <label htmlFor="book-url" className="block text-sm font-medium mb-1">
+          Book URL
+        </label>
         <input
           type="url"
           id="book-url"
@@ -58,9 +66,17 @@ function AddTab({ adminToken, addToast }) {
           aria-invalid={!!errors.url}
           aria-describedby={errors.url ? 'book-url-error' : undefined}
         />
-        {errors.url && <p id="book-url-error" className="text-sm text-red-600 mt-1">{errors.url}</p>}
+        {errors.url && (
+          <p id="book-url-error" className="text-sm text-red-600 mt-1">
+            {errors.url}
+          </p>
+        )}
       </div>
-      <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded disabled:opacity-50" disabled={loading}>
+      <button
+        type="submit"
+        className="bg-blue-600 text-white px-4 py-2 rounded disabled:opacity-50"
+        disabled={loading}
+      >
         {loading ? 'Saving...' : 'Submit'}
       </button>
     </form>
@@ -82,7 +98,9 @@ function ManageTab({ adminToken, addToast }) {
     }
   }, [adminToken]);
 
-  useEffect(() => { fetchBooks(); }, [fetchBooks]);
+  useEffect(() => {
+    fetchBooks();
+  }, [fetchBooks]);
 
   const handleDelete = async (id) => {
     try {
@@ -126,8 +144,15 @@ function ManageTab({ adminToken, addToast }) {
               <p className="text-sm text-gray-600">{book.url}</p>
             </div>
             <div className="space-x-2">
-              <button className="px-3 py-1 bg-yellow-400 rounded" onClick={() => handleEdit(book)}>Edit</button>
-              <button className="px-3 py-1 bg-red-500 text-white rounded" onClick={() => handleDelete(book._id)}>Delete</button>
+              <button className="px-3 py-1 bg-yellow-400 rounded" onClick={() => handleEdit(book)}>
+                Edit
+              </button>
+              <button
+                className="px-3 py-1 bg-red-500 text-white rounded"
+                onClick={() => handleDelete(book._id)}
+              >
+                Delete
+              </button>
             </div>
           </li>
         ))}
@@ -135,11 +160,34 @@ function ManageTab({ adminToken, addToast }) {
       {selectedBook && (
         <div className="mt-4 p-4 border rounded">
           <h2 className="text-lg font-semibold mb-2">Edit Book</h2>
-          <input className="w-full mb-2 border rounded px-2 py-1" type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="Book name" />
-          <input className="w-full mb-2 border rounded px-2 py-1" type="text" value={url} onChange={(e) => setUrl(e.target.value)} placeholder="Book URL" />
+          <input
+            className="w-full mb-2 border rounded px-2 py-1"
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Book name"
+          />
+          <input
+            className="w-full mb-2 border rounded px-2 py-1"
+            type="text"
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+            placeholder="Book URL"
+          />
           <div className="flex gap-2">
-            <button className="px-3 py-1 bg-green-500 text-white rounded" onClick={handleUpdate}>Update</button>
-            <button className="px-3 py-1 bg-gray-300 rounded" onClick={() => { setSelectedBook(null); setName(''); setUrl(''); }}>Cancel</button>
+            <button className="px-3 py-1 bg-green-500 text-white rounded" onClick={handleUpdate}>
+              Update
+            </button>
+            <button
+              className="px-3 py-1 bg-gray-300 rounded"
+              onClick={() => {
+                setSelectedBook(null);
+                setName('');
+                setUrl('');
+              }}
+            >
+              Cancel
+            </button>
           </div>
         </div>
       )}
@@ -170,10 +218,11 @@ export default function BooksPanel() {
           Manage Books
         </button>
       </div>
-      {activeTab === 'add'
-        ? <AddTab adminToken={adminToken} addToast={addToast} />
-        : <ManageTab adminToken={adminToken} addToast={addToast} />
-      }
+      {activeTab === 'add' ? (
+        <AddTab adminToken={adminToken} addToast={addToast} />
+      ) : (
+        <ManageTab adminToken={adminToken} addToast={addToast} />
+      )}
     </div>
   );
 }
