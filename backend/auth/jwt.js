@@ -1,18 +1,20 @@
-const jwt =require('jsonwebtoken');
+const jwt = require('jsonwebtoken');
+const createError = require('http-errors');
 
 const verifyToken = (req, res, next) => {
-    const token= req.headers['authorization']; 
-    if(!token){
-        return next(new Error("You dont have JWT"))
-    }
-    const bearer = token.split(' ')[1];
-    jwt.verify(bearer, process.env.JWT_SECRET, (error, user)=>{
-        if(error){
-            return next(new Error("Invalid JWT"))
-        }
-        req.user = user
-        next()
-    });
-}
-module.exports={verifyToken};
+  const header = req.headers['authorization'];
+  if (!header || !header.startsWith('Bearer ')) {
+    return next(createError(401, 'Authentication required'));
+  }
 
+  const token = header.slice(7); // strip "Bearer "
+  jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+    if (err) {
+      return next(createError(401, 'Invalid or expired token'));
+    }
+    req.user = decoded;
+    next();
+  });
+};
+
+module.exports = { verifyToken };
