@@ -1,148 +1,139 @@
-var createError = require('http-errors');
-const mongoose=require("mongoose");
-var express = require('express');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
-const cors=require('cors');
-const { OpenAI } = require("openai");
-var http = require('http');
 require('dotenv').config();
 
-const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
-});
+const express  = require('express');
+const path     = require('path');
+const http     = require('http');
+const logger   = require('morgan');
+const cors          = require('cors');
+const helmet        = require('helmet');
+const rateLimit     = require('express-rate-limit');
+const mongoSanitize = require('express-mongo-sanitize');
+const createError   = require('http-errors');
+const connectDB     = require('./config/database');
+const errorHandler  = require('./middleware/errorHandler');
 
+// ── Route imports ─────────────────────────────────────────────────────────────
+const userRouter           = require('./routes/user');
+const videoRouter          = require('./routes/video');
+const bookRouter           = require('./routes/book');
+const passwordRouter       = require('./routes/resetpassword');
+const journalRouter        = require('./routes/journal');
+const emotiontimeRouter    = require('./routes/emotiontime');
+const journaltimeRouter    = require('./routes/journaltime');
+const meditationtimeRouter = require('./routes/meditationtime');
+const reviewRouter         = require('./routes/review');
+const verifyuserRouter     = require('./routes/verifyuser');
 
+const app = express();
 
-var userRouter = require('./routes/user');
-var videoRouter = require('./routes/video');
-var bookrouter = require('./routes/book');
-var passwordresetrouter = require('./routes/resetpassword');
-var journalRouter = require('./routes/journal');
-var emotiontimerouter = require('./routes/emotiontime');
-var journaltimerouter = require('./routes/journaltime');
-var meditationtimerouter = require('./routes/meditationtime');
-var reviewrouter = require('./routes/review');
-var verifyuserrouter = require('./routes/verifyuser');
+// ── Security headers ──────────────────────────────────────────────────────────
+app.use(helmet());
 
-var app = express();
+// ── CORS ──────────────────────────────────────────────────────────────────────
+app.use(cors({
+  credentials: true,
+  origin: process.env.FRONTEND_URL || 'http://localhost:3001',
+}));
 
-app.use(logger('dev'));
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
-app.use(cors({credentials:true,origin:process.env.FRONTEND_URL || "http://localhost:3001"}));
-
-app.use(cookieParser());
+// ── Request parsing ───────────────────────────────────────────────────────────
+app.use(express.json({ limit: '50kb' }));
+app.use(express.urlencoded({ extended: true, limit: '50kb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/user', userRouter);
-app.use('/videos',videoRouter);
-app.use('/books',bookrouter);
-app.use('/password',passwordresetrouter);
-app.use('/journal',journalRouter);
-app.use('/emotiontime',emotiontimerouter);
-app.use('/journaltime',journaltimerouter);
-app.use('/meditationtime',meditationtimerouter);
-app.use('/review',reviewrouter);
-app.use('/verifyuser',verifyuserrouter);
+// ── NoSQL injection sanitization ──────────────────────────────────────────────
+app.use(mongoSanitize());
 
-const textGeneration = async (prompt) => {
+// ── HTTP request logging ──────────────────────────────────────────────────────
+app.use(logger(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
 
-  try {
-      const response = await openai.chat.completions({
-          model: 'text-curie-001',
-          prompt: `Human: ${prompt}\nAI: `,
-          temperature: 0.8,
-          max_tokens: 64,
-          top_p: 1,
-          // frequency_penalty: 0,
-          // presence_penalty: 0.6,
-          // stop: ['Human:', 'AI:']
-      });
-  
-      return {
-          status: 1,
-          response: `${response.data.choices[0].text}`
-      };
-  } catch (error) {
-      return {
-          status: 0,
-          response: ''
-      };
-  }
-};
-
-
-app.post('/dialogflow', async (req, res) => {
-  let action = req.body.queryResult.action;
-  let queryText = req.body.queryResult.queryText;
-
-  if (action === 'input.unknown') {
-      let result = await textGeneration(queryText);
-      if (result.status == 1) {
-          res.send(
-              {
-                  fulfillmentText: result.response
-              }
-          );
-      } else {
-          res.send(
-              {
-                  fulfillmentText: `Sorry, I'm not able to help with that.`
-              }
-          );
-      }
-  } else {
-      res.send(
-          {
-              fulfillmentText: `No handler for the action ${action}.`
-          }
-      );
-  }
+// ── Rate limiters ─────────────────────────────────────────────────────────────
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { message: 'Too many attempts — please try again later.' },
 });
 
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 200,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { message: 'Too many requests — please try again later.' },
+});
 
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/WECARE')
+app.use('/user/signin',       authLimiter);
+app.use('/user/admin-signin', authLimiter);
+app.use('/user/signup',       authLimiter);
+app.use('/password',          authLimiter);
+app.use('/verifyuser',        authLimiter);
+
+app.use(apiLimiter);
+
+// ── Routes ────────────────────────────────────────────────────────────────────
+app.use('/user',           userRouter);
+app.use('/videos',         videoRouter);
+app.use('/books',          bookRouter);
+app.use('/password',       passwordRouter);
+app.use('/journal',        journalRouter);
+app.use('/emotiontime',    emotiontimeRouter);
+app.use('/journaltime',    journaltimeRouter);
+app.use('/meditationtime', meditationtimeRouter);
+app.use('/review',         reviewRouter);
+app.use('/verifyuser',     verifyuserRouter);
+
+// ── Health check ─────────────────────────────────────────────────────────────
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok', uptime: process.uptime() });
+});
+
+// ── Dialogflow webhook ────────────────────────────────────────────────────────
+app.post('/dialogflow', (req, res) => {
+  const queryResult = req.body && req.body.queryResult;
+  if (!queryResult) {
+    return res.status(400).json({ fulfillmentText: 'Malformed request.' });
+  }
+  const { action } = queryResult;
+  res.json({
+    fulfillmentText: action === 'input.unknown'
+      ? "I'm here to listen. Could you tell me a little more?"
+      : `I don't have a handler for the action "${action}".`,
+  });
+});
+
+// ── 404 handler ───────────────────────────────────────────────────────────────
+app.use((req, res, next) => next(createError(404)));
+
+// ── Centralized error handler ─────────────────────────────────────────────────
+app.use(errorHandler);
+
+// ── Server (starts only after DB is ready) ────────────────────────────────────
+if (require.main === module) {
+  connectDB()
     .then(() => {
-        console.log("DB Connected");
+      const port = process.env.PORT || 3000;
+      const server = http.createServer(app).listen(port, () => {
+        console.log(`Server listening on port ${port}`);
+      });
+
+      const shutdown = (signal) => {
+        console.log(`${signal} received — shutting down gracefully`);
+        server.close(() => {
+          console.log('HTTP server closed');
+          process.exit(0);
+        });
+        // Force exit if server doesn't close within 10 s
+        setTimeout(() => process.exit(1), 10_000).unref();
+      };
+
+      process.on('SIGTERM', () => shutdown('SIGTERM'));
+      process.on('SIGINT',  () => shutdown('SIGINT'));
     })
     .catch((err) => {
-        console.error("DB connection failed", err);
-        process.exit(1);
-    });
-
-
-// catch 404 and forward to error handler
-app.use(function(req, res, next) {
-  next(createError(404));
-});
-
-
-// error handler
-app.use(function(err, req, res, next) {
-  // set locals, only providing error in development
-  res.locals.message = err.message;
-  res.locals.error = req.app.get('env') === 'development' ? err : {};
-
-    // return the error as JSON now that the view layer is removed
-  res.status(err.status || 500);
-    res.json({
-        message: err.message,
-        error: req.app.get('env') === 'development' ? err : {}
-    });
-});
-
-
-
-if (require.main === module) {
-    const port = process.env.PORT || 3000;
-    app.set('port', port);
-    const server = http.createServer(app);
-    server.listen(port, () => {
-        console.log(`Server listening on port ${port}`);
+      console.error('DB connection failed:', err);
+      process.exit(1);
     });
 }
-
 
 module.exports = app;
